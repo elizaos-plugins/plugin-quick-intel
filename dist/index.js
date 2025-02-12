@@ -142,6 +142,7 @@ function normalizeChainName(chain) {
   return normalizedInput;
 }
 function extractTokenInfo(message) {
+  var _a;
   const result = {
     chain: null,
     tokenAddress: null
@@ -155,12 +156,12 @@ function extractTokenInfo(message) {
       break;
     }
   }
-  if (!result.chain && prepositionMatch?.[1]) {
+  if (!result.chain && (prepositionMatch == null ? void 0 : prepositionMatch[1])) {
     result.chain = normalizeChainName(prepositionMatch[1]);
   }
   for (const [chainType, pattern] of Object.entries(TOKEN_PATTERNS)) {
     const match = message.match(pattern);
-    if (match?.[1]) {
+    if (match == null ? void 0 : match[1]) {
       result.tokenAddress = match[1];
       if (!result.chain && chainType === "solana" && match[1].length >= 32) {
         result.chain = "solana";
@@ -168,7 +169,7 @@ function extractTokenInfo(message) {
       break;
     }
   }
-  if (!result.chain && result.tokenAddress?.startsWith("0x")) {
+  if (!result.chain && ((_a = result.tokenAddress) == null ? void 0 : _a.startsWith("0x"))) {
     result.chain = "eth";
   }
   return result;
@@ -210,6 +211,7 @@ var TokenAuditAction = class {
     return await response.json();
   }
   async fetchDexScreenerData(tokenAddress, chain) {
+    var _a;
     elizaLogger.log("Fetching DexScreener data:", { tokenAddress, chain });
     const requestOptions = {
       method: "GET",
@@ -220,7 +222,7 @@ var TokenAuditAction = class {
       return null;
     }
     const data = await response.json();
-    if (!data?.pairs?.length) {
+    if (!((_a = data == null ? void 0 : data.pairs) == null ? void 0 : _a.length)) {
       return null;
     }
     const chainPairs = data.pairs.filter(
@@ -233,6 +235,7 @@ var TokenAuditAction = class {
     };
   }
   async fetchGeckoTerminalData(tokenAddress, chain) {
+    var _a;
     elizaLogger.log("Fetching GeckoTerminal data:", { tokenAddress, chain });
     const geckoChain = this.getGeckoChainId(chain);
     const requestOptions = {
@@ -248,7 +251,7 @@ var TokenAuditAction = class {
         return null;
       }
       const data = await response.json();
-      if (!data?.data?.length) {
+      if (!((_a = data == null ? void 0 : data.data) == null ? void 0 : _a.length)) {
         return null;
       }
       const pairs = data.data.map((pool) => ({
@@ -304,13 +307,14 @@ var TokenAuditAction = class {
     }
   }
   async fetchDexData(tokenAddress, chain) {
+    var _a, _b;
     elizaLogger.log("Fetching DEX data:", { tokenAddress, chain });
     const dexScreenerData = await this.fetchDexScreenerData(tokenAddress, chain);
-    if (dexScreenerData?.pairs?.length) {
+    if ((_a = dexScreenerData == null ? void 0 : dexScreenerData.pairs) == null ? void 0 : _a.length) {
       return dexScreenerData;
     }
     const geckoData = await this.fetchGeckoTerminalData(tokenAddress, chain);
-    if (geckoData?.pairs?.length) {
+    if ((_b = geckoData == null ? void 0 : geckoData.pairs) == null ? void 0 : _b.length) {
       return geckoData;
     }
     return null;
@@ -325,6 +329,7 @@ var auditAction = {
     return typeof apiKey === "string" && apiKey.length > 0;
   },
   handler: async (runtime, message, state, _options, callback) => {
+    var _a;
     elizaLogger.log("Starting QuickIntel audit handler...");
     try {
       const apiKey = runtime.getSetting("QUICKINTEL_API_KEY");
@@ -349,7 +354,7 @@ var auditAction = {
       const newState = await runtime.composeState(message, {
         ...state,
         auditData: JSON.stringify(auditData, null, 2),
-        marketData: auditData?.tokenDetails?.tokenName && dexData ? JSON.stringify(dexData, null, 2) : null
+        marketData: ((_a = auditData == null ? void 0 : auditData.tokenDetails) == null ? void 0 : _a.tokenName) && dexData ? JSON.stringify(dexData, null, 2) : null
       });
       const context = composeContext({
         state: newState,
@@ -378,7 +383,7 @@ var auditAction = {
       }
       return true;
     } catch (error) {
-      elizaLogger.error("Error in AUDIT_TOKEN handler:", error?.message, error?.error);
+      elizaLogger.error("Error in AUDIT_TOKEN handler:", error == null ? void 0 : error.message, error == null ? void 0 : error.error);
       if (callback) {
         await callback({
           text: "An error occurred while performing the token audit. Please try again later, and ensure the address is correct, and chain is supported.",
